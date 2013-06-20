@@ -19,8 +19,6 @@ import karaokesonglist.StringUtils;
  */
 public class CorrectCheckVisitor implements FileVisitor<Path> {
 
-    private int numFolders = 0;
-    private int numFiles = 0;
     private Path startingPath;
     private Scanner scanner;
     private List<Path> changes;
@@ -55,7 +53,6 @@ public class CorrectCheckVisitor implements FileVisitor<Path> {
             return FileVisitResult.SKIP_SUBTREE;
         }
         System.out.println("Listing folder '" + dir.toString() + "':");
-        numFolders++;
         return FileVisitResult.CONTINUE;
     }
 
@@ -75,8 +72,6 @@ public class CorrectCheckVisitor implements FileVisitor<Path> {
             print += "Artist: '" + StringUtils.addTrailingWhitespace(artist + "', ", 40);
             print += "Song: '" + song + "', ";
             System.out.println(print.trim());
-            numFiles++;
-//            }
         }
         return FileVisitResult.CONTINUE;
     }
@@ -87,6 +82,7 @@ public class CorrectCheckVisitor implements FileVisitor<Path> {
 
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
         System.out.println("Is this folder correct? If it is, press Enter, and if not, type in anything");
+        System.out.print("> ");
         String response = scanner.nextLine();
         if (response.equals("break")) {
             return FileVisitResult.TERMINATE;
