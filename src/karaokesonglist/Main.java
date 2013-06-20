@@ -1,5 +1,8 @@
 package karaokesonglist;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.util.Iterator;
 import java.util.List;
 import karaokesonglist.models.SongRepository;
 import karaokesonglist.visitors.SongCorrectVisitor;
@@ -19,7 +22,7 @@ import karaokesonglist.visitors.SongLoaderVisitor;
  */
 public class Main {
 
-    private static SongRepository repository = new SongRepository("/media/rodcastro/SAMSUNG/Karaoke songs");
+    private static SongRepository repository;
 
     /**
      * @param args the command line arguments
@@ -31,11 +34,40 @@ public class Main {
             System.out.println("Unable to load native look and feel");
         }
 
-        String param = "/media/rodcastro/SAMSUNG/Karaoke songs/Sunfly";
+        String param = "/media/rodcastro/SAMSUNG/Karaoke songs/";
         Scanner scanner = new Scanner(System.in);
+        System.out.println("Choose what folders will be included to review:\n");
+        File rootFolder = new File(param);
+        String[] packsFolders = rootFolder.list();
+        int index = 0;
+        for (String folder : packsFolders) {
+            System.out.println(++index + " - " + folder);
+        }
+        System.out.println(++index + " - All of the above\n");
+        System.out.println("Please type the chosen option:");
+        int chosen = 0;
+        while (chosen == 0) {
+            try {
+                System.out.print("> ");
+                chosen = scanner.nextInt();
+                if (chosen > index) {
+                    chosen = 0;
+                    System.out.println("Please choose a number in the list:");
+                }
+            } catch (Exception ex) {
+                scanner.next(); // Throw away the invalid input
+                System.out.println("Please type a number:");
+            }
+        }
+        if (chosen < index) {
+            param = rootFolder.listFiles()[chosen - 1].getAbsolutePath();
+        }
+        System.out.println("Chosen path: " + param + "\n");
+        repository = new SongRepository(param);
         while (true) {
             System.out.println("What do you want to do?");
-            System.out.println("C - correct folders, R - check corrected folders for errors, L - list songs, M - check for missing packs, I - open user interface");
+            System.out.println("C - correct folders, R - check corrected folders for errors, L - list songs, M - check for missing packs, I - open user interface, Q (or break) - Exit");
+            System.out.print("> ");
             String response = scanner.next();
             if (response.equals("C") || response.equals("c")) {
                 SongCorrectVisitor songVisitor = new SongCorrectVisitor(param);
@@ -69,6 +101,8 @@ public class Main {
                 frame.loadSongs();
                 frame.setVisible(true);
                 System.out.println("Songs loaded: " + repository.getSongCount());
+            } else if (response.equals("Q") || response.equals("q") || response.equals("break")) {
+                System.exit(0);
             }
             System.out.println("\n");
         }

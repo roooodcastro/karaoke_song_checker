@@ -60,7 +60,7 @@ public class SongRepository {
             if (song.getPack() != null) {
                 row[0] = song.getPack().getFullName();
             } else {
-                row[0] = "---";
+                row[0] = song.getFileName();
             }
             row[1] = song.getFormattedArtist();
             row[2] = song.getFormattedSongName();

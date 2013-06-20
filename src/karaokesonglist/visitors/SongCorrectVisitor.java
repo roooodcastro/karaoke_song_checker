@@ -90,6 +90,7 @@ public class SongCorrectVisitor implements FileVisitor<Path> {
 
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
         System.out.println("T - tag, N - song number, A - artist, S - song name, M - number and song name, R - number and artist, E - number, artist and song name");
+        System.out.print("> ");
         String response = scanner.nextLine();
         if (response.equals("break")) {
             return FileVisitResult.TERMINATE;

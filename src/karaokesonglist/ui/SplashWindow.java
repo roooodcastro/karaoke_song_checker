@@ -13,7 +13,6 @@ package karaokesonglist.ui;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
-import javax.swing.GroupLayout;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import karaokesonglist.Main;
