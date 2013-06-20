@@ -13,6 +13,7 @@ import karaokesonglist.models.Pack;
 import karaokesonglist.models.Series;
 import karaokesonglist.ui.MainWindow;
 import karaokesonglist.visitors.CorrectCheckVisitor;
+import karaokesonglist.visitors.NameDifferenceVisitor;
 import karaokesonglist.visitors.SongListVisitor;
 import karaokesonglist.visitors.SongLoaderVisitor;
 
@@ -103,6 +104,11 @@ public class Main {
                 System.out.println("Songs loaded: " + repository.getSongCount());
             } else if (response.equals("Q") || response.equals("q") || response.equals("break")) {
                 System.exit(0);
+            } else if (response.equals("D") || response.equals("d")) {
+                NameDifferenceVisitor nameDiff = new NameDifferenceVisitor(param);
+                nameDiff.findDiffs();
+                nameDiff.showSongsWithoutMp3();
+                nameDiff.showSongsWithoutCdg();
             }
             System.out.println("\n");
         }
