@@ -1,10 +1,10 @@
-package karaokesonglist.models;
+package com.rodcastro.karaokesonglist.models;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
-import karaokesonglist.visitors.SongLoaderVisitor;
+import com.rodcastro.karaokesonglist.visitors.SongLoaderVisitor;
 
 /**
  *
@@ -42,14 +42,17 @@ public class SongRepository {
         return songs.floor(mock);
     }
 
-    public String[][] findSongs(String search) {
+    public String[][] findSongs(String search, boolean searchName, boolean searchArtist, boolean searchPack) {
         Iterator<Song> iterator = songs.iterator();
         List<Song> results = new ArrayList<Song>();
         Song current;
         while (iterator.hasNext()) {
             current = iterator.next();
-            if (current.getArtist().toUpperCase().contains(search.toUpperCase())
-                    || current.getSongName().toUpperCase().contains(search.toUpperCase())) {
+            if (searchName && current.getFormattedSongName().toUpperCase().contains(search.toUpperCase())) {
+                results.add(current);
+            } else if (searchArtist && current.getFormattedArtist().toUpperCase().contains(search.toUpperCase())) {
+                results.add(current);
+            } else if (searchPack && current.getPack().getFullName().toUpperCase().contains(search.toUpperCase())) {
                 results.add(current);
             }
         }

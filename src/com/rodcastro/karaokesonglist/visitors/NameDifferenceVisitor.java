@@ -1,4 +1,4 @@
-package karaokesonglist.visitors;
+package com.rodcastro.karaokesonglist.visitors;
 
 import java.io.File;
 import java.io.IOException;

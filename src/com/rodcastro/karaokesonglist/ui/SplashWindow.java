@@ -8,14 +8,14 @@
  *
  * Created on Jun 11, 2013, 10:53:37 PM
  */
-package karaokesonglist.ui;
+package com.rodcastro.karaokesonglist.ui;
 
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
-import karaokesonglist.Main;
+import com.rodcastro.karaokesonglist.Main;
 
 /**
  *

@@ -1,4 +1,4 @@
-package karaokesonglist.visitors;
+package com.rodcastro.karaokesonglist.visitors;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -10,8 +10,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
-import karaokesonglist.models.Pack;
-import karaokesonglist.models.Song;
+import com.rodcastro.karaokesonglist.models.Pack;
+import com.rodcastro.karaokesonglist.models.Song;
 
 /**
  *

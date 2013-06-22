@@ -1,6 +1,5 @@
-package karaokesonglist.visitors;
+package com.rodcastro.karaokesonglist.visitors;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
@@ -11,22 +10,25 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import karaokesonglist.StringUtils;
+import com.rodcastro.karaokesonglist.FilenameChange;
+import com.rodcastro.karaokesonglist.StringUtils;
 
 /**
  *
  * @author rodcastro
  */
-public class CorrectCheckVisitor implements FileVisitor<Path> {
+public class SongCorrectVisitor implements FileVisitor<Path> {
 
+    private int numFolders = 0;
+    private int numFiles = 0;
     private Path startingPath;
     private Scanner scanner;
-    private List<Path> changes;
+    private List<FilenameChange> changes;
 
-    public CorrectCheckVisitor(String path) {
+    public SongCorrectVisitor(String path) {
         startingPath = Paths.get(path);
         scanner = new Scanner(System.in);
-        changes = new ArrayList<Path>();
+        changes = new ArrayList<FilenameChange>();
     }
 
     public void findSongs() {
@@ -37,41 +39,47 @@ public class CorrectCheckVisitor implements FileVisitor<Path> {
     }
 
     public void applyPendingChanges() {
-        for (Path change : changes) {
-            String directory = change.toString();
-            File oldDir = new File(directory);
-            File newDir = new File(directory.replace("OK", "").trim());
-            oldDir.renameTo(newDir);
-            System.out.println("Marked directory '" + oldDir + "' as not yet corrected");
+        for (FilenameChange change : changes) {
+            change.apply();
         }
     }
 
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
         String folderName = dir.toFile().getName();
-        if (!folderName.contains("OK") && !dir.toString().equals(startingPath.toString())) {
-            System.out.println("Directory '" + dir.toString() + "' not yet corrected, skipping...");
+        if (folderName.contains("OK")) {
+            System.out.println("Directory '" + dir.toString() + "' already corrected, skipping...");
             return FileVisitResult.SKIP_SUBTREE;
         }
         System.out.println("Listing folder '" + dir.toString() + "':");
+        numFolders++;
         return FileVisitResult.CONTINUE;
     }
 
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         String filename = file.getFileName().toString().replace("__", " - ").replace("_", " ");
         String[] partsDot = filename.split("\\.");
+//        String[] partsUnderline = filename.split("__");
+//        if (partsUnderline.length == 3) {
+//            String artist = partsUnderline[1].replace("_", " ").trim();
+//            String songName = partsUnderline[2].replace("_", " ").trim().split("\\.")[0];
+//            System.out.println("Artist: '" + artist + "', Song: '" + songName + "'");
+//        }
         if (partsDot.length > 0) {
+            String extension = partsDot[partsDot.length - 1];
+//            if (extension.equals("CDG") || extension.equals("cdg")) {
             String[] partsDash = filename.split("-");
+
             String print = "";
-            String tag, number, artist, song;
-            tag = partsDash[0].trim();
-            number = partsDash[1].trim();
-            artist = StringUtils.formatName(partsDash[2]);
-            song = StringUtils.formatName(partsDash[3]);
-            print += "Tag: '" + StringUtils.addTrailingWhitespace(tag + "', ", 10);
-            print += "Number: '" + StringUtils.addTrailingWhitespace(number + "', ", 7);
-            print += "Artist: '" + StringUtils.addTrailingWhitespace(artist + "', ", 40);
-            print += "Song: '" + song + "', ";
+//            String artist = StringUtils.formatName(partsDash[partsDash.length - 2]);
+//            String songName = StringUtils.formatName(partsDash[partsDash.length - 1].split("\\.")[0]);
+            int i = 1;
+            for (String part : partsDash) {
+                print += StringUtils.addTrailingWhitespace("Part" + i++ + ": '" + part + "', ", 40);
+            }
             System.out.println(print.trim());
+//            System.out.println("SF tag: '" + partsDash[0] + "', Artist: '" + artist + "', Song: '" + songName + "'");
+            numFiles++;
+//            }
         }
         return FileVisitResult.CONTINUE;
     }
@@ -81,15 +89,15 @@ public class CorrectCheckVisitor implements FileVisitor<Path> {
     }
 
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-        System.out.println("Is this folder correct? If it is, press Enter, and if not, type in anything");
+        System.out.println("T - tag, N - song number, A - artist, S - song name, M - number and song name, R - number and artist, E - number, artist and song name");
         System.out.print("> ");
         String response = scanner.nextLine();
         if (response.equals("break")) {
             return FileVisitResult.TERMINATE;
         } else if (response.length() > 0) {
             // Mark for name alteration
-            changes.add(dir);
-            System.out.println("Directory '" + dir.toString() + "' marked for recorrecting");
+            changes.add(new FilenameChange(dir.toString(), response));
+            System.out.println("Directory '" + dir.toString() + "' marked for name change");
         }
         return FileVisitResult.CONTINUE;
     }

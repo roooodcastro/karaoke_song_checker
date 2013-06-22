@@ -1,4 +1,4 @@
-package karaokesonglist;
+package com.rodcastro.karaokesonglist;
 
 import java.io.File;
 

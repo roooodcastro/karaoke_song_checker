@@ -1,4 +1,4 @@
-package karaokesonglist.models;
+package com.rodcastro.karaokesonglist.models;
 
 import java.util.ArrayList;
 import java.util.List;

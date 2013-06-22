@@ -1,4 +1,4 @@
-package karaokesonglist.ui;
+package com.rodcastro.karaokesonglist.ui;
 
 import java.awt.Color;
 import java.awt.Container;

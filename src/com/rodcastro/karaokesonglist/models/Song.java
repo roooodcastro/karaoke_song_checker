@@ -1,7 +1,7 @@
-package karaokesonglist.models;
+package com.rodcastro.karaokesonglist.models;
 
 import java.io.File;
-import karaokesonglist.StringUtils;
+import com.rodcastro.karaokesonglist.StringUtils;
 
 /**
  *
@@ -172,5 +172,9 @@ public class Song implements Comparable<Song> {
 
     public int getUniqueId() {
         return uniqueId;
+    }
+    
+    public String getAbsolutePath() {
+        return directory + "/" + fileName;
     }
 }
