@@ -16,6 +16,9 @@ import java.awt.Font;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import com.rodcastro.karaokesonglist.Main;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 
 /**
  *
@@ -52,6 +55,7 @@ public class SplashWindow extends javax.swing.JFrame {
             progressBar.setIndeterminate(true);
             background.add(progressBar);
             progressBar.setBounds(240, 280, 210, 10);
+            setIconImage(ImageIO.read(new File("resources/images/icon.png")));
         } catch (Exception ex) {
         }
         setSize(480, 370);
@@ -72,7 +76,7 @@ public class SplashWindow extends javax.swing.JFrame {
     private void initComponents() {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Listagem de músicas Karaokê");
+        setTitle("Sunfly Song Browser");
         setResizable(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());

@@ -4,6 +4,7 @@ import com.rodcastro.karaokesonglist.models.Song;
 import java.io.File;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import javax.swing.JOptionPane;
@@ -14,11 +15,11 @@ import javax.swing.JOptionPane;
  */
 public class KaraokePlayer {
 
-    public static KaraokePlayer instance;
-    private Queue<Song> songQueue;
+    private static KaraokePlayer instance;
+    private LinkedList<Song> songQueue;
 
     private KaraokePlayer() {
-        songQueue = new ArrayDeque<Song>();
+        songQueue = new LinkedList<Song>();
     }
 
     public static KaraokePlayer getInstance() {
@@ -63,7 +64,7 @@ public class KaraokePlayer {
         return false;
     }
     
-    public Queue<Song> getSongs() {
+    public LinkedList<Song> getSongs() {
         return songQueue;
     }
 }

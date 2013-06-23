@@ -9,7 +9,7 @@ import java.util.prefs.Preferences;
  */
 public class Settings {
 
-    private static Preferences preferences = Preferences.userNodeForPackage(com.rodcastro.karaokesonglist.Main.class);
+    private static Preferences preferences = Preferences.userNodeForPackage(com.rodcastro.karaokesonglist.Settings.class);
     public static final String PREF_WORKING_PATH = "working_path";
 
     public static String getWorkingPath() {

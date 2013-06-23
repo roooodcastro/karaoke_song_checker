@@ -3,7 +3,7 @@
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="3"/>
-    <Property name="title" type="java.lang.String" value="Sunfly Karaoke Song List"/>
+    <Property name="title" type="java.lang.String" value="Sunfly Song Browser"/>
     <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
       <Dimension value="[850, 500]"/>
     </Property>
@@ -149,7 +149,7 @@
                       <Group type="102" alignment="1" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="1" attributes="0">
-                              <Component id="btnShowInvalid" pref="198" max="32767" attributes="0"/>
+                              <Component id="btnShowInvalid" max="32767" attributes="0"/>
                               <Component id="btnPlayMode" alignment="1" max="32767" attributes="0"/>
                               <Component id="btnEditMode" alignment="1" max="32767" attributes="0"/>
                           </Group>
@@ -215,7 +215,7 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="jScrollPane2" pref="0" max="32767" attributes="0"/>
                               <Group type="102" attributes="0">
-                                  <Component id="btnQueuePlay" max="32767" attributes="0"/>
+                                  <Component id="btnQueuePlay" pref="80" max="32767" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="btnQueueUp" min="-2" pref="30" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
@@ -262,6 +262,9 @@
                         </Property>
                         <Property name="selectionMode" type="int" value="0"/>
                       </Properties>
+                      <Events>
+                        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="listQueueMouseClicked"/>
+                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>
@@ -290,6 +293,9 @@
                       <Insets value="[2, 5, 2, 5]"/>
                     </Property>
                   </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnQueueUpActionPerformed"/>
+                  </Events>
                 </Component>
                 <Component class="javax.swing.JButton" name="btnQueueDown">
                   <Properties>
@@ -298,14 +304,20 @@
                       <Insets value="[2, 5, 2, 5]"/>
                     </Property>
                   </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnQueueDownActionPerformed"/>
+                  </Events>
                 </Component>
                 <Component class="javax.swing.JButton" name="btnQueueRemove">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="X"/>
+                    <Property name="text" type="java.lang.String" value="&#x2613;"/>
                     <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
                       <Insets value="[2, 5, 2, 5]"/>
                     </Property>
                   </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnQueueRemoveActionPerformed"/>
+                  </Events>
                 </Component>
               </SubComponents>
             </Container>
@@ -486,12 +498,12 @@
                                           <Component id="btnSwitchNames" pref="0" max="32767" attributes="0"/>
                                           <EmptySpace min="-2" max="-2" attributes="0"/>
                                           <Component id="btnEditArtist" pref="0" max="32767" attributes="0"/>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="btnEditName" min="-2" pref="163" max="-2" attributes="0"/>
+                                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                                          <Component id="btnEditName" pref="0" max="32767" attributes="0"/>
                                       </Group>
                                       <Component id="jScrollPane1" pref="513" max="32767" attributes="0"/>
                                   </Group>
-                                  <EmptySpace max="-2" attributes="0"/>
+                                  <EmptySpace min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>

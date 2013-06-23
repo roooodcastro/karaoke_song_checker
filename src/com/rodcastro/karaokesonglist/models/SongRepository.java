@@ -61,12 +61,12 @@ public class SongRepository {
             Song song = results.get(i);
             String[] row = new String[4];
             if (song.getPack() != null) {
-                row[0] = song.getPack().getFullName();
+                row[2] = song.getPack().getFullName();
             } else {
-                row[0] = song.getFileName();
+                row[2] = song.getFileName();
             }
+            row[0] = song.getFormattedSongName();
             row[1] = song.getFormattedArtist();
-            row[2] = song.getFormattedSongName();
             row[3] = song.getUniqueId() + "";
             array[i] = row;
         }

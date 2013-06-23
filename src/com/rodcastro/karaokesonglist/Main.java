@@ -39,16 +39,21 @@ public class Main {
             System.out.println("Unable to load native look and feel");
         }
         if (START_WITH_UI) {
-            JFileChooser fileChooser = new JFileChooser("/");
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            int result = fileChooser.showDialog(null, "Selecionar");
-            if (result == JFileChooser.APPROVE_OPTION) {
-                searchFolder = fileChooser.getSelectedFile().getAbsolutePath();
-                System.out.println("Chosen path: " + searchFolder + "\n");
-                repository = new SongRepository(searchFolder);
-            } else {
-                System.exit(0);
+            searchFolder = Settings.getWorkingPath();
+            System.out.println(searchFolder);
+            if (searchFolder.equals(".")) {
+                JFileChooser fileChooser = new JFileChooser("/");
+                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                int result = fileChooser.showDialog(null, "Selecionar");
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    searchFolder = fileChooser.getSelectedFile().getAbsolutePath();
+                    System.out.println("Chosen path: " + searchFolder + "\n");
+                    Settings.setWorkingPath(searchFolder);
+                } else {
+                    System.exit(0);
+                }
             }
+            repository = new SongRepository(searchFolder);
             MainWindow frame = new MainWindow();
             frame.loadSongs();
             frame.setVisible(true);

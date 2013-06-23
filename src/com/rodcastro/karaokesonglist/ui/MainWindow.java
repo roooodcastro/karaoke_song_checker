@@ -12,11 +12,11 @@ import javax.swing.table.TableModel;
 import com.rodcastro.karaokesonglist.Main;
 import com.rodcastro.karaokesonglist.models.Song;
 import com.rodcastro.karaokesonglist.models.SongRepository;
-import java.awt.Dimension;
-import java.awt.Rectangle;
-import java.util.Queue;
+import java.io.File;
+import java.io.IOException;
+import java.util.LinkedList;
+import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
-import javax.swing.ListModel;
 
 /**
  *
@@ -43,6 +43,11 @@ public class MainWindow extends javax.swing.JFrame {
         btnEditName.setVisible(false);
         btnEditArtist.setVisible(false);
         btnSwitchNames.setVisible(false);
+        try {
+            setIconImage(ImageIO.read(new File("resources/images/icon.png")));
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     public void loadSongs() {
@@ -64,7 +69,7 @@ public class MainWindow extends javax.swing.JFrame {
         List sortOrder = ((DefaultRowSorter) tableSongs.getRowSorter()).getSortKeys();
         SongRepository repository = Main.getRepository();
         String[][] filteredSongs = repository.findSongs(search, searchName, searchArtist, searchPack);
-        modelSongs.setDataVector(filteredSongs, new String[]{"Pack", "Artista", "Música", "Unique Id"});
+        modelSongs.setDataVector(filteredSongs, new String[]{"Música", "Artista", "Pack", "Unique Id"});
         tableSongs.setAutoCreateRowSorter(true);
         tableSongs.setModel(modelSongs);
         tableSongs.getColumnModel().removeColumn(tableSongs.getColumnModel().getColumn(3));
@@ -89,15 +94,24 @@ public class MainWindow extends javax.swing.JFrame {
             }
         };
     }
-    
+
     private void updateQueueList() {
         DefaultListModel<String> model = new DefaultListModel<String>();
-        Queue<Song> songQueue = KaraokePlayer.getInstance().getSongs();
+        LinkedList<Song> songQueue = KaraokePlayer.getInstance().getSongs();
         int i = 1;
         for (Song song : songQueue) {
             model.addElement(i++ + " - " + song.getFormattedSongName());
         }
         listQueue.setModel(model);
+    }
+
+    private void updateQueueControls() {
+        int selected = listQueue.getSelectedIndex();
+        int size = listQueue.getModel().getSize();
+        btnQueuePlay.setEnabled(size > 0);
+        btnQueueRemove.setEnabled(selected > -1);
+        btnQueueUp.setEnabled(selected > 0);
+        btnQueueDown.setEnabled(selected > -1 && selected < size - 1);
     }
 
     /**
@@ -140,7 +154,7 @@ public class MainWindow extends javax.swing.JFrame {
         lblSongCount = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Sunfly Karaoke Song List");
+        setTitle("Sunfly Song Browser");
         setMinimumSize(new java.awt.Dimension(850, 500));
 
         lblLogo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -197,7 +211,7 @@ public class MainWindow extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnSideBarLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(pnSideBarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(btnShowInvalid, javax.swing.GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE)
+                    .addComponent(btnShowInvalid, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnPlayMode, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnEditMode, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -216,6 +230,11 @@ public class MainWindow extends javax.swing.JFrame {
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Fila de músicas", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION));
 
         listQueue.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        listQueue.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                listQueueMouseClicked(evt);
+            }
+        });
         jScrollPane2.setViewportView(listQueue);
 
         btnQueuePlay.setIcon(new javax.swing.ImageIcon("C:\\Users\\Rodrigo\\workspace\\karaoke_song_checker\\resources\\images\\play.png")); // NOI18N
@@ -230,12 +249,27 @@ public class MainWindow extends javax.swing.JFrame {
 
         btnQueueUp.setText("▲");
         btnQueueUp.setMargin(new java.awt.Insets(2, 5, 2, 5));
+        btnQueueUp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnQueueUpActionPerformed(evt);
+            }
+        });
 
         btnQueueDown.setText("▼");
         btnQueueDown.setMargin(new java.awt.Insets(2, 5, 2, 5));
+        btnQueueDown.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnQueueDownActionPerformed(evt);
+            }
+        });
 
-        btnQueueRemove.setText("X");
+        btnQueueRemove.setText("☓");
         btnQueueRemove.setMargin(new java.awt.Insets(2, 5, 2, 5));
+        btnQueueRemove.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnQueueRemoveActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -246,7 +280,7 @@ public class MainWindow extends javax.swing.JFrame {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(btnQueuePlay, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnQueuePlay, javax.swing.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnQueueUp, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -455,7 +489,7 @@ public class MainWindow extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btnEditArtist, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnEditName, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(btnEditName, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE))
                             .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE))
                         .addContainerGap())))
         );
@@ -603,7 +637,7 @@ public class MainWindow extends javax.swing.JFrame {
                     newSongName = newSongName.replace("-", "*");
                     selected.setSongName(newSongName);
                     selected.updateFile();
-                    model.setValueAt(selected.getFormattedSongName(), tableSongs.convertRowIndexToModel(rowsIds[0]), 2);
+                    model.setValueAt(selected.getFormattedSongName(), tableSongs.convertRowIndexToModel(rowsIds[0]), 0);
                     model.setValueAt(selected.getUniqueId(), tableSongs.convertRowIndexToModel(rowsIds[0]), 3);
                     JOptionPane.showMessageDialog(this, "Nome da música alterada!", "Sunfly Song List", JOptionPane.INFORMATION_MESSAGE);
                 }
@@ -620,7 +654,7 @@ public class MainWindow extends javax.swing.JFrame {
                     if (song.isValid()) {
                         song.setSongName(newSongName);
                         song.updateFile();
-                        model.setValueAt(song.getFormattedSongName(), tableSongs.convertRowIndexToModel(rowsIds[i]), 2);
+                        model.setValueAt(song.getFormattedSongName(), tableSongs.convertRowIndexToModel(rowsIds[i]), 0);
                         model.setValueAt(song.getUniqueId(), tableSongs.convertRowIndexToModel(rowsIds[i]), 3);
                     } else {
                         invalid++;
@@ -656,7 +690,7 @@ public class MainWindow extends javax.swing.JFrame {
                 selected.setSongName(newSongName);
                 selected.updateFile();
                 model.setValueAt(selected.getFormattedArtist(), tableSongs.convertRowIndexToModel(rowsIds[0]), 1);
-                model.setValueAt(selected.getFormattedSongName(), tableSongs.convertRowIndexToModel(rowsIds[0]), 2);
+                model.setValueAt(selected.getFormattedSongName(), tableSongs.convertRowIndexToModel(rowsIds[0]), 0);
                 model.setValueAt(selected.getUniqueId(), tableSongs.convertRowIndexToModel(rowsIds[0]), 3);
             } else {
                 JOptionPane.showMessageDialog(this, "Música inválida, não é possível fazer alterações", "Sunfly Song List", JOptionPane.ERROR_MESSAGE);
@@ -711,6 +745,7 @@ public class MainWindow extends javax.swing.JFrame {
             if (selectedSong != null) {
                 KaraokePlayer.getInstance().addToQueue(selectedSong);
                 updateQueueList();
+                updateQueueControls();
             }
         }
     }//GEN-LAST:event_tableSongsMouseClicked
@@ -718,8 +753,51 @@ public class MainWindow extends javax.swing.JFrame {
     private void btnQueuePlayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnQueuePlayActionPerformed
         KaraokePlayer.getInstance().playNext();
         updateQueueList();
+        updateQueueControls();
     }//GEN-LAST:event_btnQueuePlayActionPerformed
 
+    private void btnQueueRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnQueueRemoveActionPerformed
+        int selected = listQueue.getSelectedIndex();
+        if (selected >= 0) {
+            KaraokePlayer.getInstance().getSongs().remove(selected);
+            updateQueueList();
+            if (listQueue.getModel().getSize() > selected)
+                listQueue.setSelectedIndex(selected);
+            else if (listQueue.getModel().getSize() > 0)
+                listQueue.setSelectedIndex(selected - 1);
+            updateQueueControls();
+        }
+    }//GEN-LAST:event_btnQueueRemoveActionPerformed
+
+    private void btnQueueUpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnQueueUpActionPerformed
+        int selected = listQueue.getSelectedIndex();
+        if (selected >= 1) {
+            LinkedList<Song> songs = KaraokePlayer.getInstance().getSongs();
+            Song swap = songs.get(selected - 1);
+            songs.set(selected - 1, songs.get(selected));
+            songs.set(selected, swap);
+            updateQueueList();
+            listQueue.setSelectedIndex(selected - 1);
+            updateQueueControls();
+        }
+    }//GEN-LAST:event_btnQueueUpActionPerformed
+
+    private void btnQueueDownActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnQueueDownActionPerformed
+        int selected = listQueue.getSelectedIndex();
+        if (selected >= 0 && selected < (listQueue.getModel().getSize() - 1)) {
+            LinkedList<Song> songs = KaraokePlayer.getInstance().getSongs();
+            Song swap = songs.get(selected + 1);
+            songs.set(selected + 1, songs.get(selected));
+            songs.set(selected, swap);
+            updateQueueList();
+            listQueue.setSelectedIndex(selected + 1);
+            updateQueueControls();
+        }
+    }//GEN-LAST:event_btnQueueDownActionPerformed
+
+    private void listQueueMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_listQueueMouseClicked
+        updateQueueControls();
+    }//GEN-LAST:event_listQueueMouseClicked
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnEditArtist;
     private javax.swing.JToggleButton btnEditMode;
