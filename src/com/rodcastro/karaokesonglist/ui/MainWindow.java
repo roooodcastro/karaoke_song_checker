@@ -48,6 +48,7 @@ public class MainWindow extends javax.swing.JFrame {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+        updateQueueControls();
     }
 
     public void loadSongs() {
@@ -441,6 +442,11 @@ public class MainWindow extends javax.swing.JFrame {
                 tableSongsMouseClicked(evt);
             }
         });
+        tableSongs.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                tableSongsKeyTyped(evt);
+            }
+        });
         jScrollPane1.setViewportView(tableSongs);
         tableSongs.getColumnModel().getColumn(0).setResizable(false);
         tableSongs.getColumnModel().getColumn(1).setResizable(false);
@@ -798,6 +804,29 @@ public class MainWindow extends javax.swing.JFrame {
     private void listQueueMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_listQueueMouseClicked
         updateQueueControls();
     }//GEN-LAST:event_listQueueMouseClicked
+
+    private void tableSongsKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tableSongsKeyTyped
+        System.out.println(evt.getKeyChar());
+        switch (evt.getKeyChar()) {
+            case '\n':
+                SongRepository repository = Main.getRepository();
+                int[] rowsIds = tableSongs.getSelectedRows();
+                TableModel model = tableSongs.getModel();
+                Song selectedSong = null;
+                Object value = model.getValueAt(tableSongs.convertRowIndexToModel(rowsIds[0]), 3);
+                if (value != null) {
+                    int uniqueId = Integer.parseInt(value.toString());
+                    selectedSong = repository.findSong(uniqueId);
+                }
+                if (selectedSong != null) {
+                    KaraokePlayer.getInstance().addToQueue(selectedSong);
+                    updateQueueList();
+                    updateQueueControls();
+                }
+                break;
+        }
+
+    }//GEN-LAST:event_tableSongsKeyTyped
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnEditArtist;
     private javax.swing.JToggleButton btnEditMode;
