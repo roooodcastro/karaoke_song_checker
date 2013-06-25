@@ -1,5 +1,6 @@
 package com.rodcastro.karaokesonglist.visitors;
 
+import com.rodcastro.karaokesonglist.Main;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.TreeSet;
 import com.rodcastro.karaokesonglist.models.Pack;
 import com.rodcastro.karaokesonglist.models.Song;
+import com.rodcastro.karaokesonglist.ui.LoadingBarListener;
 
 /**
  *
@@ -24,6 +26,9 @@ public class SongLoaderVisitor implements FileVisitor<Path> {
     private TreeSet<Pack> packs;
     private Path startingPath;
     private boolean verbose = false;
+    private LoadingBarListener listener;
+    private int totalDirCount = 0;
+    private int currentDirCount = 0;
 
     public SongLoaderVisitor(String path) {
         startingPath = Paths.get(path);
@@ -34,8 +39,14 @@ public class SongLoaderVisitor implements FileVisitor<Path> {
 
     public void loadSongs() {
         try {
+            totalDirCount = Main.getDirectoriesCount(startingPath.toFile());
+            System.out.println("There are " + totalDirCount + " directories to load");
+            if (listener != null) {
+                listener.setMaxValue(totalDirCount);
+            }
             Files.walkFileTree(startingPath, this);
         } catch (IOException ex) {
+            System.out.println("Deu merda!");
         }
     }
 
@@ -85,6 +96,9 @@ public class SongLoaderVisitor implements FileVisitor<Path> {
     }
 
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+        if (listener != null) {
+            listener.onUpdateBar(++currentDirCount, "Carregando: \"" + dir.toString() + "\"");
+        }
         if (verbose) {
             System.out.println("");
         }
@@ -117,5 +131,13 @@ public class SongLoaderVisitor implements FileVisitor<Path> {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    public LoadingBarListener getListener() {
+        return listener;
+    }
+
+    public void setListener(LoadingBarListener listener) {
+        this.listener = listener;
     }
 }

@@ -14,9 +14,7 @@ import com.rodcastro.karaokesonglist.visitors.CorrectCheckVisitor;
 import com.rodcastro.karaokesonglist.visitors.NameDifferenceVisitor;
 import com.rodcastro.karaokesonglist.visitors.SongListVisitor;
 import com.rodcastro.karaokesonglist.visitors.SongLoaderVisitor;
-import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 
 /**
  *
@@ -56,7 +54,6 @@ public class Main {
             repository = new SongRepository(searchFolder);
             MainWindow frame = new MainWindow();
             frame.loadSongs();
-            frame.setVisible(true);
             System.out.println("Songs loaded: " + repository.getSongCount());
         } else {
             chooseFolder();
@@ -102,7 +99,6 @@ public class Main {
                 } else if (response.equals("I") || response.equals("i")) {
                     MainWindow frame = new MainWindow();
                     frame.loadSongs();
-                    frame.setVisible(true);
                     System.out.println("Songs loaded: " + repository.getSongCount());
                 } else if (response.equals("Q") || response.equals("q") || response.equals("break")) {
                     System.exit(0);
@@ -169,5 +165,40 @@ public class Main {
 
     public static SongRepository getRepository() {
         return repository;
+    }
+
+    public static SongRepository reloadRepository() {
+        repository.reloadSongs();
+        return repository;
+    }
+
+    public static void openSongFolderDialog() {
+        String currentFolder = Settings.getWorkingPath();
+        JFileChooser fileChooser = new JFileChooser(currentFolder);
+        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        int result = fileChooser.showDialog(null, "Selecionar");
+        if (result == JFileChooser.APPROVE_OPTION) {
+            searchFolder = fileChooser.getSelectedFile().getAbsolutePath();
+            System.out.println("Chosen path: " + searchFolder + "\n");
+            Settings.setWorkingPath(searchFolder);
+        } else {
+            System.exit(0);
+        }
+    }
+
+    public static int getDirectoriesCount(File file) {
+        File[] files = file.listFiles();
+        int count = 0;
+        boolean hasSubdirectories = false;
+        for (File f : files) {
+            if (f.isDirectory()) {
+                count += getDirectoriesCount(f);
+                hasSubdirectories = true;
+            }
+        }
+        if (!hasSubdirectories) {
+            count++;
+        }
+        return count;
     }
 }

@@ -28,13 +28,14 @@ public class MainWindow extends javax.swing.JFrame {
     private DefaultTableModel modelSongs;
     private DefaultTableModel modelInvalidSongs;
     private boolean editMode = false;
+    private LoadingBarListener listener;
 
     /**
      * Creates new form MainWindow
      */
     public MainWindow() {
         initComponents();
-        splash = new SplashWindow();
+        splash = new SplashWindow(this);
         splash.setVisible(true);
         this.setSize(1000, 700);
         this.setLocationRelativeTo(null);
@@ -49,16 +50,36 @@ public class MainWindow extends javax.swing.JFrame {
             ex.printStackTrace();
         }
         updateQueueControls();
+        progressBar.setVisible(false);
+        progressBar.setString("Preparando...");
+        listener = new LoadingBarListener() {
+            @Override
+            public void onUpdateBar(int value, String message) {
+                progressBar.setValue(value);
+                progressBar.setString((int) Math.ceil(progressBar.getPercentComplete() * 100) + "% - " + message);
+            }
+
+            @Override
+            public void onChangeMaxValue(int maxValue) {
+                progressBar.setMaximum(maxValue);
+            }
+
+            @Override
+            public void onFinish() {
+                searchSongs("");
+                DefaultRowSorter sorter = ((DefaultRowSorter) tableSongs.getRowSorter());
+                ArrayList list = new ArrayList();
+                list.add(new RowSorter.SortKey(1, SortOrder.ASCENDING));
+                sorter.setSortKeys(list);
+                progressBar.setValue(0);
+                progressBar.setVisible(false);
+                progressBar.setString("Preparando...");
+            }
+        };
     }
 
     public void loadSongs() {
         splash.loadSongs();
-        splash.dispose();
-        searchSongs("");
-        DefaultRowSorter sorter = ((DefaultRowSorter) tableSongs.getRowSorter());
-        ArrayList list = new ArrayList();
-        list.add(new RowSorter.SortKey(1, SortOrder.ASCENDING));
-        sorter.setSortKeys(list);
     }
 
     public void searchSongs(String search) {
@@ -153,13 +174,22 @@ public class MainWindow extends javax.swing.JFrame {
         btnEditName = new javax.swing.JButton();
         btnSwitchNames = new javax.swing.JButton();
         lblSongCount = new javax.swing.JLabel();
+        progressBar = new javax.swing.JProgressBar();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        menuFile = new javax.swing.JMenu();
+        itemExit = new javax.swing.JMenuItem();
+        menuPlayControl = new javax.swing.JMenu();
+        itemPlayNext = new javax.swing.JMenuItem();
+        menuSettings = new javax.swing.JMenu();
+        itemChangeWorkingPath = new javax.swing.JMenuItem();
+        itemChangeKaraokePath = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Sunfly Song Browser");
         setMinimumSize(new java.awt.Dimension(850, 500));
 
         lblLogo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblLogo.setIcon(new javax.swing.ImageIcon("C:\\Users\\Rodrigo\\workspace\\karaoke_song_checker\\resources\\images\\logo.png")); // NOI18N
+        lblLogo.setIcon(new javax.swing.ImageIcon("/home/rodcastro/workspace/karaoke_song_checker/resources/images/logo.png")); // NOI18N
         lblLogo.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -220,12 +250,13 @@ public class MainWindow extends javax.swing.JFrame {
         pnSideBarLayout.setVerticalGroup(
             pnSideBarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnSideBarLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap()
                 .addComponent(btnPlayMode, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnEditMode, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnShowInvalid, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(btnShowInvalid, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(9, Short.MAX_VALUE))
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Fila de músicas", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION));
@@ -238,7 +269,7 @@ public class MainWindow extends javax.swing.JFrame {
         });
         jScrollPane2.setViewportView(listQueue);
 
-        btnQueuePlay.setIcon(new javax.swing.ImageIcon("C:\\Users\\Rodrigo\\workspace\\karaoke_song_checker\\resources\\images\\play.png")); // NOI18N
+        btnQueuePlay.setIcon(new javax.swing.ImageIcon("/home/rodcastro/workspace/karaoke_song_checker/resources/images/play.png")); // NOI18N
         btnQueuePlay.setText("Play");
         btnQueuePlay.setToolTipText("");
         btnQueuePlay.setMargin(new java.awt.Insets(2, 5, 2, 5));
@@ -249,7 +280,7 @@ public class MainWindow extends javax.swing.JFrame {
         });
 
         btnQueueUp.setText("▲");
-        btnQueueUp.setMargin(new java.awt.Insets(2, 5, 2, 5));
+        btnQueueUp.setMargin(new java.awt.Insets(2, 3, 2, 3));
         btnQueueUp.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnQueueUpActionPerformed(evt);
@@ -257,7 +288,7 @@ public class MainWindow extends javax.swing.JFrame {
         });
 
         btnQueueDown.setText("▼");
-        btnQueueDown.setMargin(new java.awt.Insets(2, 5, 2, 5));
+        btnQueueDown.setMargin(new java.awt.Insets(2, 3, 2, 3));
         btnQueueDown.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnQueueDownActionPerformed(evt);
@@ -281,7 +312,7 @@ public class MainWindow extends javax.swing.JFrame {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(btnQueuePlay, javax.swing.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
+                        .addComponent(btnQueuePlay, javax.swing.GroupLayout.DEFAULT_SIZE, 84, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnQueueUp, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -301,7 +332,7 @@ public class MainWindow extends javax.swing.JFrame {
                         .addComponent(btnQueueDown, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(btnQueueRemove, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(10, 10, 10)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -313,16 +344,14 @@ public class MainWindow extends javax.swing.JFrame {
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(pnSideBar, javax.swing.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE)
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(pnSideBar, javax.swing.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
-                .addComponent(pnSideBar, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(pnSideBar, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
@@ -357,15 +386,15 @@ public class MainWindow extends javax.swing.JFrame {
 
         checkSongName.setSelected(true);
         checkSongName.setText("Nome da música");
-        checkSongName.setPreferredSize(new java.awt.Dimension(120, 23));
+        checkSongName.setPreferredSize(new java.awt.Dimension(150, 23));
 
         checkArtist.setSelected(true);
         checkArtist.setText("Nome do Artista");
-        checkArtist.setPreferredSize(new java.awt.Dimension(120, 23));
+        checkArtist.setPreferredSize(new java.awt.Dimension(150, 23));
 
         checkPack.setSelected(true);
         checkPack.setText("Nome do Pacote");
-        checkPack.setPreferredSize(new java.awt.Dimension(120, 23));
+        checkPack.setPreferredSize(new java.awt.Dimension(150, 23));
 
         javax.swing.GroupLayout pnSearchLayout = new javax.swing.GroupLayout(pnSearch);
         pnSearch.setLayout(pnSearchLayout);
@@ -387,7 +416,7 @@ public class MainWindow extends javax.swing.JFrame {
                                 .addComponent(checkArtist, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(checkPack, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 58, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         pnSearchLayout.setVerticalGroup(
@@ -478,6 +507,8 @@ public class MainWindow extends javax.swing.JFrame {
 
         lblSongCount.setText("Total de músicas: 0");
 
+        progressBar.setStringPainted(true);
+
         javax.swing.GroupLayout pnTableLayout = new javax.swing.GroupLayout(pnTable);
         pnTable.setLayout(pnTableLayout);
         pnTableLayout.setHorizontalGroup(
@@ -487,17 +518,16 @@ public class MainWindow extends javax.swing.JFrame {
                 .addGroup(pnTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(pnTableLayout.createSequentialGroup()
                         .addComponent(lblSongCount)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(pnTableLayout.createSequentialGroup()
-                        .addGroup(pnTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(pnTableLayout.createSequentialGroup()
-                                .addComponent(btnSwitchNames, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnEditArtist, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnEditName, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE))
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE))
-                        .addContainerGap())))
+                        .addComponent(btnSwitchNames, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnEditArtist, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnEditName, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE))
+                .addContainerGap())
         );
         pnTableLayout.setVerticalGroup(
             pnTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -508,9 +538,11 @@ public class MainWindow extends javax.swing.JFrame {
                     .addComponent(btnEditName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnSwitchNames, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 136, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lblSongCount)
+                .addGroup(pnTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblSongCount)
+                    .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -522,7 +554,7 @@ public class MainWindow extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(pnTable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(pnSearch, javax.swing.GroupLayout.DEFAULT_SIZE, 545, Short.MAX_VALUE)))
+                    .addComponent(pnSearch, javax.swing.GroupLayout.DEFAULT_SIZE, 568, Short.MAX_VALUE)))
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -535,6 +567,50 @@ public class MainWindow extends javax.swing.JFrame {
 
         splitPanel.setRightComponent(jPanel6);
 
+        menuFile.setText("Arquivo");
+
+        itemExit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
+        itemExit.setText("Sair");
+        itemExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemExitActionPerformed(evt);
+            }
+        });
+        menuFile.add(itemExit);
+
+        jMenuBar1.add(menuFile);
+
+        menuPlayControl.setText("Músicas");
+
+        itemPlayNext.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_SPACE, java.awt.event.InputEvent.CTRL_MASK));
+        itemPlayNext.setText("Tocar Próxima");
+        itemPlayNext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemPlayNextActionPerformed(evt);
+            }
+        });
+        menuPlayControl.add(itemPlayNext);
+
+        jMenuBar1.add(menuPlayControl);
+
+        menuSettings.setText("Configurações");
+        menuSettings.setBorderPainted(true);
+
+        itemChangeWorkingPath.setText("Trocar Pasta das Músicas");
+        itemChangeWorkingPath.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemChangeWorkingPathActionPerformed(evt);
+            }
+        });
+        menuSettings.add(itemChangeWorkingPath);
+
+        itemChangeKaraokePath.setText("Trocar Pasta do Player");
+        menuSettings.add(itemChangeKaraokePath);
+
+        jMenuBar1.add(menuSettings);
+
+        setJMenuBar(jMenuBar1);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -542,7 +618,7 @@ public class MainWindow extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(splitPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(splitPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 826, Short.MAX_VALUE)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -767,10 +843,11 @@ public class MainWindow extends javax.swing.JFrame {
         if (selected >= 0) {
             KaraokePlayer.getInstance().getSongs().remove(selected);
             updateQueueList();
-            if (listQueue.getModel().getSize() > selected)
+            if (listQueue.getModel().getSize() > selected) {
                 listQueue.setSelectedIndex(selected);
-            else if (listQueue.getModel().getSize() > 0)
+            } else if (listQueue.getModel().getSize() > 0) {
                 listQueue.setSelectedIndex(selected - 1);
+            }
             updateQueueControls();
         }
     }//GEN-LAST:event_btnQueueRemoveActionPerformed
@@ -827,6 +904,23 @@ public class MainWindow extends javax.swing.JFrame {
         }
 
     }//GEN-LAST:event_tableSongsKeyTyped
+
+    private void itemExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemExitActionPerformed
+        this.dispose();
+    }//GEN-LAST:event_itemExitActionPerformed
+
+    private void itemPlayNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemPlayNextActionPerformed
+        KaraokePlayer.getInstance().playNext();
+        updateQueueList();
+        updateQueueControls();
+    }//GEN-LAST:event_itemPlayNextActionPerformed
+
+    private void itemChangeWorkingPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemChangeWorkingPathActionPerformed
+        Main.openSongFolderDialog();
+        progressBar.setVisible(true);
+        Main.getRepository().setListener(listener);
+        Main.reloadRepository();
+    }//GEN-LAST:event_itemChangeWorkingPathActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnEditArtist;
     private javax.swing.JToggleButton btnEditMode;
@@ -842,7 +936,12 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JCheckBox checkArtist;
     private javax.swing.JCheckBox checkPack;
     private javax.swing.JCheckBox checkSongName;
+    private javax.swing.JMenuItem itemChangeKaraokePath;
+    private javax.swing.JMenuItem itemChangeWorkingPath;
+    private javax.swing.JMenuItem itemExit;
+    private javax.swing.JMenuItem itemPlayNext;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel5;
@@ -852,9 +951,13 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JLabel lblLogo;
     private javax.swing.JLabel lblSongCount;
     private javax.swing.JList listQueue;
+    private javax.swing.JMenu menuFile;
+    private javax.swing.JMenu menuPlayControl;
+    private javax.swing.JMenu menuSettings;
     private javax.swing.JPanel pnSearch;
     private javax.swing.JPanel pnSideBar;
     private javax.swing.JPanel pnTable;
+    private javax.swing.JProgressBar progressBar;
     private javax.swing.JSplitPane splitPanel;
     private javax.swing.JTable tableSongs;
     private javax.swing.JTextField txtSearch;

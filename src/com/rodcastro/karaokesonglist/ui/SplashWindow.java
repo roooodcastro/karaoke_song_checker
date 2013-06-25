@@ -28,10 +28,14 @@ public class SplashWindow extends javax.swing.JFrame {
 
     private ImagePanel background;
     private JProgressBar progressBar;
+    private LoadingBarListener listener;
+    private JLabel lblMessage;
+    private MainWindow mainFrame;
 
-    public SplashWindow() {
+    public SplashWindow(MainWindow frame) {
         initComponents();
         try {
+            mainFrame = frame;
             background = new ImagePanel("resources/images/sunfly.jpg");
             background.setBounds(0, 0, 480, 360);
             Container panel = new Container();
@@ -39,23 +43,43 @@ public class SplashWindow extends javax.swing.JFrame {
             this.getContentPane().add(background);
             JLabel lblTitle1 = new JLabel("Karaokê Sunfly");
             JLabel lblTitle2 = new JLabel("Lista de Músicas");
-            JLabel lblLoading = new JLabel("Carregando...");
+            lblMessage = new JLabel("Preparando...");
             Font titleFont = new Font(Font.SANS_SERIF, Font.BOLD, 24);
             lblTitle1.setFont(titleFont);
             lblTitle2.setFont(titleFont);
             background.setLayout(null);
             background.add(lblTitle1);
             background.add(lblTitle2);
-            background.add(lblLoading);
+            background.add(lblMessage);
             lblTitle1.setBounds(250, 160, 250, 30);
             lblTitle2.setBounds(240, 195, 250, 30);
-            lblLoading.setBounds(240, 250, 200, 25);
+            lblMessage.setBounds(240, 250, 200, 25);
             progressBar = new JProgressBar();
             progressBar.setPreferredSize(new Dimension(210, 10));
-            progressBar.setIndeterminate(true);
             background.add(progressBar);
             progressBar.setBounds(240, 280, 210, 10);
             setIconImage(ImageIO.read(new File("resources/images/icon.png")));
+            listener = new LoadingBarListener() {
+
+                @Override
+                public void onUpdateBar(int value, String message) {
+                    progressBar.setValue(value);
+                    lblMessage.setText(message);
+                }
+
+                @Override
+                public void onChangeMaxValue(int maxValue) {
+                    progressBar.setMaximum(maxValue);
+                }
+
+                @Override
+                public void onFinish() {
+                    mainFrame.searchSongs("");
+                    mainFrame.setVisible(true);
+                    SplashWindow.this.dispose();
+                }
+            };
+            Main.getRepository().setListener(listener);
         } catch (Exception ex) {
         }
         setSize(480, 370);

@@ -1,5 +1,7 @@
 package com.rodcastro.karaokesonglist.models;
 
+import com.rodcastro.karaokesonglist.Settings;
+import com.rodcastro.karaokesonglist.ui.LoadingBarListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -16,9 +18,11 @@ public class SongRepository {
     private TreeSet<Song> songs;
     private List<Song> invalidSongs;
     private TreeSet<Pack> packs;
+    private LoadingBarListener listener;
+    private String path;
 
     public SongRepository(String path) {
-        visitor = new SongLoaderVisitor(path);
+        this.path = path;
         songs = new TreeSet<Song>();
         packs = new TreeSet<Pack>();
         invalidSongs = new ArrayList<Song>();
@@ -26,11 +30,24 @@ public class SongRepository {
 
     public void loadSongs() {
         if (songs.isEmpty()) {
-            visitor.loadSongs();
-            this.songs = visitor.getSongs();
-            this.packs = visitor.getPacks();
-            this.invalidSongs = visitor.getInvalidSongs();
+            reloadSongs();
         }
+    }
+
+    public void reloadSongs() {
+        Thread loader = new Thread(new Runnable() {
+            public void run() {
+                SongRepository.this.visitor = new SongLoaderVisitor(Settings.getWorkingPath());
+                SongRepository.this.visitor.setListener(listener);
+                SongRepository.this.visitor.loadSongs();
+                SongRepository.this.songs = visitor.getSongs();
+                SongRepository.this.packs = visitor.getPacks();
+                SongRepository.this.invalidSongs = visitor.getInvalidSongs();
+                if (listener != null)
+                    listener.onFinish();
+            }
+        });
+        loader.start();
     }
 
     public int getSongCount() {
@@ -88,5 +105,16 @@ public class SongRepository {
             array[i] = row;
         }
         return array;
+    }
+
+    public LoadingBarListener getListener() {
+        return listener;
+    }
+
+    public void setListener(LoadingBarListener listener) {
+        this.listener = listener;
+        if (visitor != null) {
+            visitor.setListener(listener);
+        }
     }
 }
