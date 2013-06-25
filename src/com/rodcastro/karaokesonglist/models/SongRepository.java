@@ -69,7 +69,7 @@ public class SongRepository {
                 results.add(current);
             } else if (searchArtist && current.getFormattedArtist().toUpperCase().contains(search.toUpperCase())) {
                 results.add(current);
-            } else if (searchPack && current.getPack().getFullName().toUpperCase().contains(search.toUpperCase())) {
+            } else if (current.getPack() != null && searchPack && current.getPack().getFullName().toUpperCase().contains(search.toUpperCase())) {
                 results.add(current);
             }
         }
