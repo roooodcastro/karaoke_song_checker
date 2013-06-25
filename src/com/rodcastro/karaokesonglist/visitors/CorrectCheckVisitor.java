@@ -11,7 +11,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import com.rodcastro.karaokesonglist.StringUtils;
+import com.rodcastro.karaokesonglist.utils.StringUtils;
 
 /**
  *

@@ -10,8 +10,10 @@ import javax.swing.SortOrder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import com.rodcastro.karaokesonglist.Main;
+import com.rodcastro.karaokesonglist.utils.Settings;
 import com.rodcastro.karaokesonglist.models.Song;
 import com.rodcastro.karaokesonglist.models.SongRepository;
+import com.rodcastro.karaokesonglist.utils.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
@@ -27,8 +29,13 @@ public class MainWindow extends javax.swing.JFrame {
     private SplashWindow splash;
     private DefaultTableModel modelSongs;
     private DefaultTableModel modelInvalidSongs;
-    private boolean editMode = false;
+    private int mode = 0;
     private LoadingBarListener listener;
+    private boolean playerPresent = false;
+    private String lastSearch = "";
+    public static final int MODE_BROWSE = 0;
+    public static final int MODE_EDIT = 1;
+    public static final int MODE_INVALID = 2;
 
     /**
      * Creates new form MainWindow
@@ -47,11 +54,43 @@ public class MainWindow extends javax.swing.JFrame {
         try {
             setIconImage(ImageIO.read(new File("resources/images/icon.png")));
         } catch (IOException ex) {
-            ex.printStackTrace();
+            System.out.println("Error loading MainWindow's icon");
         }
+        playerPresent = FileUtils.isFileValid(Settings.getKaraokePath());
         updateQueueControls();
         progressBar.setVisible(false);
         progressBar.setString("Preparando...");
+        createDefaultListener();
+    }
+
+    public void loadSongs() {
+        splash.loadSongs();
+    }
+
+    public void searchSongs(String search) {
+        lastSearch = search;
+        if (mode != MODE_INVALID && search != null) {
+            btnSearch.setEnabled(false);
+            txtSearch.setEditable(false);
+            boolean searchName = checkSongName.isSelected();
+            boolean searchArtist = checkArtist.isSelected();
+            boolean searchPack = checkPack.isSelected();
+            List sortOrder = ((DefaultRowSorter) tableSongs.getRowSorter()).getSortKeys();
+            SongRepository repository = Main.getRepository();
+            String[][] filteredSongs = repository.findSongs(search, searchName, searchArtist, searchPack);
+            modelSongs.setDataVector(filteredSongs, new String[]{"Música", "Artista", "Pack", "Unique Id"});
+            tableSongs.setAutoCreateRowSorter(true);
+            tableSongs.setModel(modelSongs);
+            tableSongs.getColumnModel().removeColumn(tableSongs.getColumnModel().getColumn(3));
+            DefaultRowSorter sorter = ((DefaultRowSorter) tableSongs.getRowSorter());
+            sorter.setSortKeys(sortOrder);
+            btnSearch.setEnabled(true);
+            txtSearch.setEditable(true);
+            lblSongCount.setText("Total de músicas: " + modelSongs.getRowCount());
+        }
+    }
+
+    protected final void createDefaultListener() {
         listener = new LoadingBarListener() {
             @Override
             public void onUpdateBar(int value, String message) {
@@ -76,30 +115,6 @@ public class MainWindow extends javax.swing.JFrame {
                 progressBar.setString("Preparando...");
             }
         };
-    }
-
-    public void loadSongs() {
-        splash.loadSongs();
-    }
-
-    public void searchSongs(String search) {
-        btnSearch.setEnabled(false);
-        txtSearch.setEditable(false);
-        boolean searchName = checkSongName.isSelected();
-        boolean searchArtist = checkArtist.isSelected();
-        boolean searchPack = checkPack.isSelected();
-        List sortOrder = ((DefaultRowSorter) tableSongs.getRowSorter()).getSortKeys();
-        SongRepository repository = Main.getRepository();
-        String[][] filteredSongs = repository.findSongs(search, searchName, searchArtist, searchPack);
-        modelSongs.setDataVector(filteredSongs, new String[]{"Música", "Artista", "Pack", "Unique Id"});
-        tableSongs.setAutoCreateRowSorter(true);
-        tableSongs.setModel(modelSongs);
-        tableSongs.getColumnModel().removeColumn(tableSongs.getColumnModel().getColumn(3));
-        DefaultRowSorter sorter = ((DefaultRowSorter) tableSongs.getRowSorter());
-        sorter.setSortKeys(sortOrder);
-        btnSearch.setEnabled(true);
-        txtSearch.setEditable(true);
-        lblSongCount.setText("Total de músicas: " + modelSongs.getRowCount());
     }
 
     private void createTableModels() {
@@ -131,9 +146,26 @@ public class MainWindow extends javax.swing.JFrame {
         int selected = listQueue.getSelectedIndex();
         int size = listQueue.getModel().getSize();
         btnQueuePlay.setEnabled(size > 0);
+        itemPlayNext.setEnabled(size > 0);
         btnQueueRemove.setEnabled(selected > -1);
         btnQueueUp.setEnabled(selected > 0);
         btnQueueDown.setEnabled(selected > -1 && selected < size - 1);
+    }
+
+    private void playNext() {
+        if (playerPresent) {
+            KaraokePlayer.getInstance().playNext();
+            updateQueueList();
+            updateQueueControls();
+        } else {
+            JOptionPane.showMessageDialog(this, "Não é possível abrir a música pois o player não está configurado. Por favor configure-o no menu de Configurações", "Sunfly Song Browser", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void updateModeButtons() {
+        btnEditMode.setSelected(mode == MODE_EDIT);
+        btnPlayMode.setSelected(mode == MODE_BROWSE);
+        btnShowInvalid.setSelected(mode == MODE_INVALID);
     }
 
     /**
@@ -370,11 +402,6 @@ public class MainWindow extends javax.swing.JFrame {
                 txtSearchActionPerformed(evt);
             }
         });
-        txtSearch.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                txtSearchKeyTyped(evt);
-            }
-        });
 
         btnSearch.setText("Buscar");
         btnSearch.setPreferredSize(new java.awt.Dimension(65, 30));
@@ -604,7 +631,12 @@ public class MainWindow extends javax.swing.JFrame {
         });
         menuSettings.add(itemChangeWorkingPath);
 
-        itemChangeKaraokePath.setText("Trocar Pasta do Player");
+        itemChangeKaraokePath.setText("Trocar Executável do Player");
+        itemChangeKaraokePath.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemChangeKaraokePathActionPerformed(evt);
+            }
+        });
         menuSettings.add(itemChangeKaraokePath);
 
         jMenuBar1.add(menuSettings);
@@ -638,9 +670,6 @@ public class MainWindow extends javax.swing.JFrame {
     private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
         searchSongs(txtSearch.getText());
     }//GEN-LAST:event_btnSearchActionPerformed
-
-    private void txtSearchKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtSearchKeyTyped
-    }//GEN-LAST:event_txtSearchKeyTyped
 
     private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
         searchSongs(txtSearch.getText());
@@ -784,33 +813,37 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_btnSwitchNamesActionPerformed
 
     private void btnEditModeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditModeActionPerformed
-        editMode = true;
-        btnEditName.setVisible(editMode);
-        btnEditArtist.setVisible(editMode);
-        btnSwitchNames.setVisible(editMode);
-        btnEditMode.setSelected(editMode);
-        btnPlayMode.setSelected(!editMode);
+        mode = MODE_EDIT;
+        btnEditName.setVisible(true);
+        btnEditArtist.setVisible(true);
+        btnSwitchNames.setVisible(true);
+        updateModeButtons();
+        btnSearch.setEnabled(true);
+        searchSongs(lastSearch);
     }//GEN-LAST:event_btnEditModeActionPerformed
 
     private void btnPlayModeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPlayModeActionPerformed
-        editMode = false;
-        btnEditName.setVisible(editMode);
-        btnEditArtist.setVisible(editMode);
-        btnSwitchNames.setVisible(editMode);
-        btnEditMode.setSelected(editMode);
-        btnPlayMode.setSelected(!editMode);
+        mode = MODE_BROWSE;
+        btnEditName.setVisible(false);
+        btnEditArtist.setVisible(false);
+        btnSwitchNames.setVisible(false);
+        updateModeButtons();
+        btnSearch.setEnabled(true);
+        searchSongs(lastSearch);
     }//GEN-LAST:event_btnPlayModeActionPerformed
 
     private void btnShowInvalidActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowInvalidActionPerformed
-        if (btnShowInvalid.isSelected()) {
-            SongRepository repository = Main.getRepository();
-            String[][] invalidSongs = repository.findInvalidSongs("");
-            modelInvalidSongs.setDataVector(invalidSongs, new String[]{"Nome do arquivo"});
-            tableSongs.setAutoCreateRowSorter(true);
-            tableSongs.setModel(modelInvalidSongs);
-        } else {
-            searchSongs("");
-        }
+        mode = MODE_INVALID;
+        btnEditName.setVisible(false);
+        btnEditArtist.setVisible(false);
+        btnSwitchNames.setVisible(false);
+        SongRepository repository = Main.getRepository();
+        String[][] invalidSongs = repository.findInvalidSongs("");
+        modelInvalidSongs.setDataVector(invalidSongs, new String[]{"Nome do arquivo"});
+        tableSongs.setAutoCreateRowSorter(true);
+        tableSongs.setModel(modelInvalidSongs);
+        btnSearch.setEnabled(false);
+        updateModeButtons();
     }//GEN-LAST:event_btnShowInvalidActionPerformed
 
     private void tableSongsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tableSongsMouseClicked
@@ -833,9 +866,7 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_tableSongsMouseClicked
 
     private void btnQueuePlayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnQueuePlayActionPerformed
-        KaraokePlayer.getInstance().playNext();
-        updateQueueList();
-        updateQueueControls();
+        playNext();
     }//GEN-LAST:event_btnQueuePlayActionPerformed
 
     private void btnQueueRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnQueueRemoveActionPerformed
@@ -910,9 +941,7 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_itemExitActionPerformed
 
     private void itemPlayNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemPlayNextActionPerformed
-        KaraokePlayer.getInstance().playNext();
-        updateQueueList();
-        updateQueueControls();
+        playNext();
     }//GEN-LAST:event_itemPlayNextActionPerformed
 
     private void itemChangeWorkingPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemChangeWorkingPathActionPerformed
@@ -921,6 +950,11 @@ public class MainWindow extends javax.swing.JFrame {
         Main.getRepository().setListener(listener);
         Main.reloadRepository();
     }//GEN-LAST:event_itemChangeWorkingPathActionPerformed
+
+    private void itemChangeKaraokePathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemChangeKaraokePathActionPerformed
+        Main.openPlayerFileDialog();
+        playerPresent = FileUtils.isFileValid(Settings.getKaraokePath());
+    }//GEN-LAST:event_itemChangeKaraokePathActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnEditArtist;
     private javax.swing.JToggleButton btnEditMode;

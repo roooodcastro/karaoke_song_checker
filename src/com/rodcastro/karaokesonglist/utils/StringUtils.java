@@ -1,4 +1,4 @@
-package com.rodcastro.karaokesonglist;
+package com.rodcastro.karaokesonglist.utils;
 
 /**
  *

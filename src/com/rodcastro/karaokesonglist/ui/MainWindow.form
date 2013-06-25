@@ -59,8 +59,11 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="itemChangeKaraokePath">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Trocar Pasta do Player"/>
+                <Property name="text" type="java.lang.String" value="Trocar Execut&#xe1;vel do Player"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="itemChangeKaraokePathActionPerformed"/>
+              </Events>
             </MenuItem>
           </SubComponents>
         </Menu>
@@ -495,7 +498,6 @@
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtSearchActionPerformed"/>
-                    <EventHandler event="keyTyped" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="txtSearchKeyTyped"/>
                   </Events>
                 </Component>
                 <Component class="javax.swing.JButton" name="btnSearch">

@@ -10,7 +10,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import com.rodcastro.karaokesonglist.models.Song;
-import com.rodcastro.karaokesonglist.StringUtils;
+import com.rodcastro.karaokesonglist.utils.StringUtils;
 
 /**
  *

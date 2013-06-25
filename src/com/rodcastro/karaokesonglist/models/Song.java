@@ -1,7 +1,7 @@
 package com.rodcastro.karaokesonglist.models;
 
 import java.io.File;
-import com.rodcastro.karaokesonglist.StringUtils;
+import com.rodcastro.karaokesonglist.utils.StringUtils;
 
 /**
  *

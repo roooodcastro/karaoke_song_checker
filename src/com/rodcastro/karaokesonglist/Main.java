@@ -1,5 +1,6 @@
 package com.rodcastro.karaokesonglist;
 
+import com.rodcastro.karaokesonglist.utils.Settings;
 import java.io.File;
 import java.util.List;
 import com.rodcastro.karaokesonglist.models.SongRepository;
@@ -181,6 +182,20 @@ public class Main {
             searchFolder = fileChooser.getSelectedFile().getAbsolutePath();
             System.out.println("Chosen path: " + searchFolder + "\n");
             Settings.setWorkingPath(searchFolder);
+        } else {
+            System.exit(0);
+        }
+    }
+
+    public static void openPlayerFileDialog() {
+        String currentPlayer = Settings.getKaraokePath();
+        JFileChooser fileChooser = new JFileChooser(currentPlayer);
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        int result = fileChooser.showDialog(null, "Selecionar");
+        if (result == JFileChooser.APPROVE_OPTION) {
+            String exeFile = fileChooser.getSelectedFile().getAbsolutePath();
+            System.out.println("Chosen executable: " + exeFile + "\n");
+            Settings.setKaraokePath(exeFile);
         } else {
             System.exit(0);
         }

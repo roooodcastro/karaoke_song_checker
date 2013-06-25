@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import com.rodcastro.karaokesonglist.FilenameChange;
-import com.rodcastro.karaokesonglist.StringUtils;
+import com.rodcastro.karaokesonglist.utils.StringUtils;
 
 /**
  *

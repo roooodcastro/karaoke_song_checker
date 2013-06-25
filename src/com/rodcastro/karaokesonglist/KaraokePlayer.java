@@ -1,6 +1,9 @@
 package com.rodcastro.karaokesonglist;
 
 import com.rodcastro.karaokesonglist.models.Song;
+import com.rodcastro.karaokesonglist.utils.FileUtils;
+import com.rodcastro.karaokesonglist.utils.OSValidator;
+import com.rodcastro.karaokesonglist.utils.Settings;
 import java.io.File;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -46,24 +49,30 @@ public class KaraokePlayer {
 
     private boolean playSong(Song song) {
         try {
-            File programFilesPath = new File("C:/Program Files (x86)");
-            if (!programFilesPath.exists()) {
-                programFilesPath = new File(System.getenv("ProgramFiles"));
-            }
-            File playerExe = new File(programFilesPath.getAbsolutePath() + "/Karaoke Builder Player/kbplayer.exe");
-            if (playerExe.exists()) {
-                String playCmd = "\"" + playerExe.getAbsolutePath() + "\" \"" + song.getAbsolutePath() + "\"";
-                System.out.println("Executando música: " + song.toString());
-                Runtime.getRuntime().exec(playCmd);
+            String playerFilename = Settings.getKaraokePath();
+            if (FileUtils.isFileValid(playerFilename)) {
+                File playerExe = new File(playerFilename);
+                String playCmd;
+                if (OSValidator.isWindows()) {
+                    playCmd = "\"" + playerExe.getAbsolutePath() + "\" -f \"" + song.getAbsolutePath() + "\"";
+                    System.out.println("Executando música: " + playCmd);
+                    Runtime.getRuntime().exec(playCmd);
+                } else {
+                    playCmd = playerExe.getAbsolutePath() + " -f \"" + song.getAbsolutePath() + "\"";
+                    System.out.println("Executando música: " + playCmd);
+                    Runtime.getRuntime().exec(new String[] { "/bin/bash", "-c", playCmd});
+                }
                 return true;
             } else {
                 JOptionPane.showMessageDialog(null, "O executável do player não foi encontrado!", "Sunfly Karaoke Browser", JOptionPane.ERROR_MESSAGE);
             }
         } catch (Exception ex) {
+            System.out.println("Error trying to play song!");
+            ex.printStackTrace();
         }
         return false;
     }
-    
+
     public LinkedList<Song> getSongs() {
         return songQueue;
     }

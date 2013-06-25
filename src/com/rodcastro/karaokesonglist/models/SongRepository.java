@@ -1,6 +1,6 @@
 package com.rodcastro.karaokesonglist.models;
 
-import com.rodcastro.karaokesonglist.Settings;
+import com.rodcastro.karaokesonglist.utils.Settings;
 import com.rodcastro.karaokesonglist.ui.LoadingBarListener;
 import java.util.ArrayList;
 import java.util.Iterator;
